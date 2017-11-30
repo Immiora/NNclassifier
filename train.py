@@ -1,7 +1,7 @@
 import argparse
 import sys
 import os
-from utils import *
+import utils
 
 
 ##
@@ -108,9 +108,9 @@ def run_NNclassifier(params):
 
     # get train, val and test sets
     n_folds = int(100 / params.test_pcnt)
-    Train, Val, Test = make_kcrossvalidation(x, y, n_folds, shuffle=True)
-    Train, Val, Test = zscore_dataset(Train, Val, Test, z_train=True, zscore_x=params.zscore, zscore_y=False)
-    Train, Val, Test = dim_check(Train, Val, Test, nn_type=params.nn_type, nn_dim=params.n_dim)
+    Train, Val, Test = utils.make_kcrossvalidation(x, y, n_folds, shuffle=True)
+    Train, Val, Test = utils.zscore_dataset(Train, Val, Test, z_train=True, zscore_x=params.zscore, zscore_y=False)
+    Train, Val, Test = utils.dim_check(Train, Val, Test, nn_type=params.nn_type, nn_dim=params.n_dim)
 
     # train model
     Models = []
@@ -119,15 +119,15 @@ def run_NNclassifier(params):
         NN = make_NN(n_classes=n_classes, params=params)
 
         M = NNClassifier(NN, lr = params.lr, w_decay=params.w_decay)
-        ktrain = augment(Train[kfold], n_times=params.augment_times) if params.augment else Train[kfold]
+        ktrain = utils.augment(Train[kfold], n_times=params.augment_times) if params.augment else Train[kfold]
         M.train(ktrain, Val[kfold], n_epochs=params.n_epochs, batch_size=params.batch_size)
         M.test(Test[kfold])
 
-        Models.append(copy_model(M, copyall=params.save_weights))
+        Models.append(utils.copy_model(M, copyall=params.save_weights))
 
     # save models
-    pM = concat_models(Models)
-    if params.out_dir is not None: save_model(pM, params.out_dir + '/model' + str(n_folds) + '.p')
+    pM = utils.concat_models(Models)
+    if params.out_dir is not None: utils.save_model(pM, params.out_dir + '/model' + str(n_folds) + '.p')
 
     print "Total performance: " + \
         str(round(sum(pM.test_correct) / float(sum(pM.test_n)), 4)) + " (" +\

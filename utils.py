@@ -35,10 +35,10 @@ def zscore_2dfrom3d(x, axis=0, m=None, s=None):
     :return: zscored x
     '''
 	
-	def z_score(x, axis=0):
-		m = np.mean(x, axis=axis, keepdims=True)
-		s = np.std(x, axis=axis, keepdims=True)
-    return (x - m) / s, m, s
+    def z_score(x, axis=0):
+        m = np.mean(x, axis=axis, keepdims=True)
+        s = np.std(x, axis=axis, keepdims=True)
+        return (x - m) / s, m, s
 
     dims = x.shape
     x0 = x.reshape((-1, dims[-1]))
