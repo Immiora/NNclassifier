@@ -1,4 +1,4 @@
-<h3>Neural network classifier implemented in chainer</h3>
+<h3>Neural network classifier implemented in Chainer</h3>
 (Draft)
 
 Different architectures can be specified: 
