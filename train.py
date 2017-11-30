@@ -2,7 +2,12 @@ import argparse
 import sys
 import os
 import utils
-
+import numpy as np
+import chainer
+from chainer import optimizers
+from chainer import Link, Chain, ChainList, Variable
+import chainer.functions as F
+import chainer.links as L
 
 ##
 class NNClassifier:
@@ -22,7 +27,7 @@ class NNClassifier:
         best_model = self.optimizer.target.copy()
 
         for epoch in range(n_epochs):
-            kbtrain = make_batches(ktrain, batch_size=batch_size, shuffle=True)
+            kbtrain = utils.make_batches(ktrain, batch_size=batch_size, shuffle=True)
             self.n_batches = len(kbtrain)
             self.epoch = epoch
             self.tloss.append([])
@@ -116,7 +121,7 @@ def run_NNclassifier(params):
     Models = []
     for kfold in range(n_folds):
         print "Fold " + str(kfold)
-        NN = make_NN(n_classes=n_classes, params=params)
+        NN = utils.make_NN(n_classes=n_classes, params=params)
 
         M = NNClassifier(NN, lr = params.lr, w_decay=params.w_decay)
         ktrain = utils.augment(Train[kfold], n_times=params.augment_times) if params.augment else Train[kfold]
