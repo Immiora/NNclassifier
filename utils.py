@@ -2,7 +2,6 @@ import numpy as np
 import list_utils as jb_utils
 import cPickle as pickle
 import copy
-import z_score
 from models import CNN, CNN_ND, MLP
 
 
@@ -35,11 +34,16 @@ def zscore_2dfrom3d(x, axis=0, m=None, s=None):
     :param x: 3d input array: ntrials x ntimepoints x nfeatures
     :return: zscored x
     '''
+	
+	def z_score(x, axis=0):
+		m = np.mean(x, axis=axis, keepdims=True)
+		s = np.std(x, axis=axis, keepdims=True)
+    return (x - m) / s, m, s
 
     dims = x.shape
     x0 = x.reshape((-1, dims[-1]))
     if (m is None) & (s is None):
-        x0, m, s = z_score.z_score(x0, axis=axis)
+        x0, m, s = z_score(x0, axis=axis)
     else:
         x0 -= m
         x0 /= s
