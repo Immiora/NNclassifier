@@ -3,7 +3,7 @@ import list_utils as jb_utils
 import cPickle as pickle
 import copy
 import z_score
-from model_zoo import *
+from models import CNN, CNN_ND, MLP
 
 
 def zscore_dataset(Train, Val, Test, z_train=True, zscore_x=True, zscore_y=True, verbose=True):

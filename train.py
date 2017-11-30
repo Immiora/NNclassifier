@@ -1,7 +1,7 @@
 import argparse
 import sys
 import os
-from sup_NNclassifier import *
+from utils import *
 
 
 ##
@@ -151,17 +151,5 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
-
-
-# windows: [-250, 250], [-500, 500]
-
-# add baseline: svm NN in chainer
-# salience maps!!
-
-# restructure code: continuous decoding on same task using trained NN with optimal params
-# restructure code: continuous decoding on word data
-# visualization? performance metric?
-# cluster word data based on the phoneme probability profiles -> do same words land in same clusters?
-
 
 
