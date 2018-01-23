@@ -136,6 +136,12 @@ def augment_n_times(data, n=2):
     return stacked
 
 
+def smooth_signal(y, n):
+    box = np.ones(n)/n
+    ys = np.convolve(y, box, mode='same')
+    return ys
+
+
 def smooth_ends(data, n_points, axis=0):
     '''
     Trim axis by n_points on both sides
@@ -232,7 +238,7 @@ def expand_x_dims(Data):
     xData = [np.expand_dims(xData[i], axis=1) for i in range(len(xData))]
 
     New = []
-    [New.append((xData[i], Data[i][1])) for i in range(len(Data))]
+    [New.append([xData[i], Data[i][1]]) for i in range(len(Data))]
 
     return New
 
@@ -250,7 +256,7 @@ def reduce_x_dims(Data):
     xData = [np.reshape(xData[i], (xData[i].shape[0], -1)) for i in range(len(xData))]
 
     New = []
-    [New.append((xData[i], Data[i][1])) for i in range(len(Data))]
+    [New.append([xData[i], Data[i][1]]) for i in range(len(Data))]
 
     return New
 

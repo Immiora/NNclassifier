@@ -33,7 +33,7 @@ class NNClassifier:
             self.tloss.append([])
             self.tacc.append([])
             for i_batch in range(self.n_batches):
-                loss = self.model(Variable(kbtrain[i_batch][0]), Variable(kbtrain[i_batch][1])).loss
+                loss = self.model(Variable(kbtrain[i_batch][0]), Variable(kbtrain[i_batch][1]), test=False).loss
                 self.tloss[epoch].append(loss.data[()])
                 self.tacc[epoch].append(F.accuracy(self.model.y, kbtrain[i_batch][1]).data[()])
                 self.print_report('train')
@@ -42,7 +42,7 @@ class NNClassifier:
                 self.optimizer.update()
 
             model_val = self.model.copy()
-            self.vloss.append(model_val(Variable(kval[0]), Variable(kval[1])).loss.data[()])
+            self.vloss.append(model_val(Variable(kval[0]), Variable(kval[1]), test=True).loss.data[()])
             self.vacc.append(F.accuracy(model_val.y, kval[1]).data[()])
             self.vcorrect = np.sum(F.argmax(model_val.y, axis=1).data == kval[1])
             self.vall = len(kval[1])
@@ -70,7 +70,7 @@ class NNClassifier:
         self.test_loss = []
         self.test_acc = []
         model_test = self.model.copy()
-        self.test_loss.append(model_test(Variable(ktest[0]), Variable(ktest[1])).loss.data[()])
+        self.test_loss.append(model_test(Variable(ktest[0]), Variable(ktest[1]), test=True).loss.data[()])
         self.test_acc.append(F.accuracy(model_test.y, ktest[1]).data[()])
         self.test_correct = np.sum(F.argmax(model_test.y, axis=1).data == ktest[1])
         self.test_n = len(ktest[1])

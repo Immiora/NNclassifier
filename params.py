@@ -12,7 +12,7 @@ class Params(object):
         self.n_dim = 2
         self.batch_size = 100
         self.lr = 1e-04
-        self.zscore = False
+        self.zscore = True
         self.augment = False
         self.augment_times = 2
         self.use_bn = False

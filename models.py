@@ -25,13 +25,13 @@ class CNN(ChainList):
         super(CNN, self).__init__(links)
 
 
-    def __call__(self, x, t):
-        self.h[0] = self[0][1](F.elu(self[0][0](x))) if self[0][1].name == 'bn' else F.elu(self[0][0](x))
+    def __call__(self, x, t, test=False):
+        self.h[0] = self[0][1](F.elu(self[0][0](x)), test) if self[0][1].name == 'bn' else F.elu(self[0][0](x))
         start = 2 if self[0][1].name == 'bn' else 1
         step = 2 if self[0][1].name == 'bn' else 1
         c = 1
         for i_layer in range(start, self.n_conv_layers, step):
-            self.h[c] = self[0][i_layer+1](F.elu(self[0][i_layer](self.h[c-1]))) if self[0][i_layer+1].name == 'bn' \
+            self.h[c] = self[0][i_layer+1](F.elu(self[0][i_layer](self.h[c-1])), test) if self[0][i_layer+1].name == 'bn' \
                    else F.elu(self[0][i_layer](self.h[c-1]))
             c += 1
 
@@ -61,17 +61,17 @@ class CNN_ND(ChainList):
         self.h = {}
         super(CNN_ND, self).__init__(links)
 
-    def __call__(self, x, t):
-        self.h[0] = self[0][1](F.leaky_relu(self[0][0](x))) if self[0][1].name == 'bn' else F.leaky_relu(self[0][0](x))
+    def __call__(self, x, t, test=False):
+        self.h[0] = self[0][1](F.leaky_relu(self[0][0](x)), test) if self[0][1].name == 'bn' else F.leaky_relu(self[0][0](x))
         start = 2 if self[0][1].name == 'bn' else 1
         step = 2 if self[0][1].name == 'bn' else 1
         c = 1
         for i_layer in range(start, self.n_conv_layers, step):
-            self.h[c] = self[0][i_layer+1](F.leaky_relu(self[0][i_layer](self.h[c-1]))) if self[0][i_layer+1].name == 'bn' \
+            self.h[c] = self[0][i_layer+1](F.leaky_relu(self[0][i_layer](self.h[c-1])), test) if self[0][i_layer+1].name == 'bn' \
                    else F.leaky_relu(self[0][i_layer](self.h[c-1]))
             c += 1
 
-        #self.h[c] = F.dropout(F.elu(self[0][-2](self.h[c-1])), 0.1)
+        #self.h[c] = F.dropout(F.elu(self[0][-2](self.h[c-1])), 0.3)
         self.y = self[0][-1](self.h[c-1])
         self.loss = F.softmax_cross_entropy(self.y, t)
 
