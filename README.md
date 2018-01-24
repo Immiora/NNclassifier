@@ -1,5 +1,5 @@
 <h3>Neural network classifier implemented in Chainer</h3>
-By default trains a 2d CNN on X to predict categorical labels in Y.
+By default trains a 2d CNN on X to predict categorical labels in Y. During training Adam optimizer minimizes cross-entropy loss.
 
 Different architectures can be specified: 
   - varying dimensions for convolution (input x should be of corresponding shape): ```--n_dim``` or ```-d``` (default=2)
