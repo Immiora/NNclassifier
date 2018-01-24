@@ -12,13 +12,13 @@ import chainer.links as L
 ##
 class NNClassifier:
 
-    def __init__(self, NN, lr=1e-04, w_decay=100):
+    def __init__(self, NN, lr, w_decay):
         self.model = NN
         self.optimizer = optimizers.Adam(alpha=lr)
         self.optimizer.setup(self.model)
         self.optimizer.add_hook(chainer.optimizer.WeightDecay(rate=w_decay))
 
-    def train(self, ktrain, kval, n_epochs=100, batch_size=1, no_improve_lim =50):
+    def train(self, ktrain, kval, n_epochs, batch_size, no_improve_lim=50):
         self.tloss, self.tacc, self.vloss, self.vacc = [], [], [], []
         self.min_val_loss = 100000
         self.no_improve_lim = no_improve_lim
@@ -42,7 +42,7 @@ class NNClassifier:
                 self.optimizer.update()
 
             model_val = self.model.copy()
-            self.vloss.append(model_val(Variable(kval[0]), Variable(kval[1]), test=True).loss.data[()])
+            self.vloss.append(model_val(Variable(kval[0], volatile=True), Variable(kval[1], volatile=True), test=True).loss.data[()])
             self.vacc.append(F.accuracy(model_val.y, kval[1]).data[()])
             self.vcorrect = np.sum(F.argmax(model_val.y, axis=1).data == kval[1])
             self.vall = len(kval[1])
@@ -70,7 +70,7 @@ class NNClassifier:
         self.test_loss = []
         self.test_acc = []
         model_test = self.model.copy()
-        self.test_loss.append(model_test(Variable(ktest[0]), Variable(ktest[1]), test=True).loss.data[()])
+        self.test_loss.append(model_test(Variable(ktest[0], volatile=True), Variable(ktest[1], volatile=True), test=True).loss.data[()])
         self.test_acc.append(F.accuracy(model_test.y, ktest[1]).data[()])
         self.test_correct = np.sum(F.argmax(model_test.y, axis=1).data == ktest[1])
         self.test_n = len(ktest[1])
@@ -125,7 +125,7 @@ def run_NNclassifier(params):
 
         M = NNClassifier(NN, lr = params.lr, w_decay=params.w_decay)
         ktrain = utils.augment(Train[kfold], n_times=params.augment_times) if params.augment else Train[kfold]
-        M.train(ktrain, Val[kfold], n_epochs=params.n_epochs, batch_size=params.batch_size)
+        M.train(ktrain, Val[kfold], n_epochs=params.n_epochs, batch_size=params.batch_size, no_improve_lim=params.early_stop)
         M.test(Test[kfold])
 
         Models.append(utils.copy_model(M, copyall=params.save_weights))
@@ -148,7 +148,20 @@ def main(args):
     parser.add_argument('--n_filters', '-f', type=str, default=32)
     parser.add_argument('--filter_size', '-s', default=9)
     parser.add_argument('--n_epochs', '-e', type=int, default=100)
-    parser.add_argument('--w_decay', '-w', default = 100)
+    parser.add_argument('--w_decay', '-w', default = 0)
+    parser.add_argument('--use_bn', '-n', default=True)
+    parser.add_argument('--batch_size', '-b', default=100)
+    parser.add_argument('--early_stop', default=10)
+    parser.add_argument('--nn_type', default='CNN_ND')
+    parser.add_argument('--n_layers', default=1)
+    parser.add_argument('--n_dim', default=2)
+    parser.add_argument('--batch_size', default=100)
+    parser.add_argument('--lr', default=1e-04)
+    parser.add_argument('--zscore', default=True)
+    parser.add_argument('--augment', default=False)
+    parser.add_argument('--augment_times', default=2)
+    parser.add_argument('--use_bn', default=True)
+    parser.add_argument('--save_weights', default=True)
     parser.add_argument('--out_dir', '-o', type=str, default = './')
     args = parser.parse_args(args)
     run_NNclassifier(args)
@@ -156,5 +169,3 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
-
-

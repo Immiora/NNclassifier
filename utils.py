@@ -2,7 +2,7 @@ import numpy as np
 import list_utils as jb_utils
 import cPickle as pickle
 import copy
-from models import CNN, CNN_ND, MLP
+from models import CNN_ND, MLP
 
 
 def zscore_dataset(Train, Val, Test, z_train=True, zscore_x=True, zscore_y=True, verbose=True):
@@ -179,15 +179,7 @@ def augment(data, n_times):
 
 
 def make_NN(n_classes, params):
-    if params.nn_type == 'CNN':
-        NN = CNN(n_layers=params.n_layers,
-                 n_filters=params.n_filters,
-                 filter_size=(params.filter_size, 1),
-                 pad_size=(params.filter_size - 1) / 2 if type(params.filter_size) is int
-                     else tuple([(i - 1) / 2 for i in params.filter_size]),
-                 n_output=n_classes,
-                 use_bn=params.use_bn)
-    elif params.nn_type == 'CNN_ND':
+    if params.nn_type == 'CNN_ND':
         NN = CNN_ND(n_layers=params.n_layers,
                  n_dim = params.n_dim,
                  n_filters=params.n_filters,
