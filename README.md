@@ -1,4 +1,4 @@
-<h3>Neural network classifier implemented in Chainer</h3>
+<h3>A convolutional neural network classifier implemented in Chainer</h3>
 By default trains a 2d CNN on X to predict categorical labels in Y. During training Adam optimizer minimizes cross-entropy loss.
 
 
