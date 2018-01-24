@@ -47,7 +47,6 @@ class MLP(ChainList):
 
     def __init__(self, n_layers, n_hidden, n_output, use_bn):
 
-        # links = add_k_links(link_type='Linear', k=n_layers, n_in=None, n_hid=n_hidden, n_out=n_output)
         links = ChainList()
         for i_layer in range(n_layers-1):
             links.add_link(L.Linear(None, n_hidden))
