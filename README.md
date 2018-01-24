@@ -32,5 +32,5 @@ Code used for classification problems using neural data
 
 <h4>Alternatively, a MLP can be trained:</h4>
 
-```python train.py ../data/x_train_m.npy ../data/t_train.npy --test_pcnt 10 --nn_type MLP --batch_size 200 --save_weights False```
+```python train.py ../data/x_train_m.npy ../data/t_train.npy --test_pcnt 10 --nn_type MLP --batch_size 200```
 
