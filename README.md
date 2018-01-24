@@ -11,3 +11,11 @@ Different architectures can be specified:
   - details of training.
   
 Code used for classification problems using neural data
+
+
+Examples:
+```python train.py -help```
+
+```python train.py ../data/x_train_m.npy ../data/t_train.npy -t 10 -f 64 -b 200 -l 2```
+
+```python train.py ../data/x_train_m.npy ../data/t_train.npy --test_pcnt 10 --batch_size 200 --save_weights False```
