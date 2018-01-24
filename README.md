@@ -14,11 +14,9 @@ Different architectures can be specified:
   - learning rate: ```--lr``` (default=1e-04)
   - save trained weights: ```--save_weights``` (default=True)
   
-
-Alternatively, a MLP can be trained.
-
+Instead of a CNN a MLP can be trained by setting ```--nn_type MLP``` and adjusting ```--n_hidden_fc``` (default=100)
+  
 Code used for classification problems using neural data
-
 
 <h4>Help parameters:</h4>
 
@@ -30,4 +28,9 @@ Code used for classification problems using neural data
 
 ```python train.py ../data/x_train_m.npy ../data/t_train.npy --test_pcnt 10 --batch_size 200 --save_weights False```
 
+
+
+<h4>Alternatively, a MLP can be trained:</h4>
+
 ```python train.py ../data/x_train_m.npy ../data/t_train.npy --test_pcnt 10 --nn_type MLP --batch_size 200 --save_weights False```
+
