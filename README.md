@@ -15,7 +15,8 @@ Details of the architecture can be modified:
   - learning rate: ```--lr``` (default=1e-04)
   - save trained weights: ```--save_weights``` (default=True)
   
-Instead of a CNN a MLP can be trained by setting ```--nn_type MLP``` and adjusting ```--n_hidden_fc``` (default=100)
+Instead of a CNN a MLP can be trained by setting ```--nn_type MLP``` and adjusting ```--n_hidden_fc``` (default=100).
+
 By default k-fold cross-validation of model performance is run. K is set based on ```--test_pcnt``` (default=10). This leads to 100/10 fold cross-validation.
 
 Code used for classification problems using neural data
