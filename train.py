@@ -18,7 +18,7 @@ class NNClassifier:
         self.optimizer.setup(self.model)
         self.optimizer.add_hook(chainer.optimizer.WeightDecay(rate=w_decay))
 
-    def train(self, ktrain, kval, n_epochs, batch_size, no_improve_lim=50):
+    def train(self, ktrain, kval, n_epochs, batch_size, no_improve_lim):
         self.tloss, self.tacc, self.vloss, self.vacc = [], [], [], []
         self.min_val_loss = 100000
         self.no_improve_lim = no_improve_lim
@@ -41,10 +41,9 @@ class NNClassifier:
                 loss.backward()
                 self.optimizer.update()
 
-            model_val = self.model.copy()
-            self.vloss.append(model_val(Variable(kval[0], volatile=True), Variable(kval[1], volatile=True), test=True).loss.data[()])
-            self.vacc.append(F.accuracy(model_val.y, kval[1]).data[()])
-            self.vcorrect = np.sum(F.argmax(model_val.y, axis=1).data == kval[1])
+            self.vloss.append(self.model(Variable(kval[0], volatile=True), Variable(kval[1], volatile=True), test=True).loss.data[()])
+            self.vacc.append(F.accuracy(self.model.y, kval[1]).data[()])
+            self.vcorrect = np.sum(F.argmax(self.model.y, axis=1).data == kval[1])
             self.vall = len(kval[1])
 
             if (self.vloss[-1] < self.min_val_loss): ## | (self.vacc[-1] > self.max_val_acc):
@@ -69,14 +68,13 @@ class NNClassifier:
     def test(self, ktest):
         self.test_loss = []
         self.test_acc = []
-        model_test = self.model.copy()
-        self.test_loss.append(model_test(Variable(ktest[0], volatile=True), Variable(ktest[1], volatile=True), test=True).loss.data[()])
-        self.test_acc.append(F.accuracy(model_test.y, ktest[1]).data[()])
-        self.test_correct = np.sum(F.argmax(model_test.y, axis=1).data == ktest[1])
+        self.test_loss.append(self.model(Variable(ktest[0], volatile=True), Variable(ktest[1], volatile=True), test=True).loss.data[()])
+        self.test_acc.append(F.accuracy(self.model.y, ktest[1]).data[()])
+        self.test_correct = np.sum(F.argmax(self.model.y, axis=1).data == ktest[1])
         self.test_n = len(ktest[1])
         self.test_targets = ktest[1]
-        self.test_predictions = F.argmax(model_test.y, axis=1).data
-        self.test_proba = F.softmax(model_test.y).data
+        self.test_predictions = F.argmax(self.model.y, axis=1).data
+        self.test_proba = F.softmax(self.model.y).data
         self.test_maxproba = F.max(Variable(self.test_proba), axis=1).data
         self.print_report('test')
 
@@ -114,7 +112,8 @@ def run_NNclassifier(params):
     # get train, val and test sets
     n_folds = int(100 / params.test_pcnt)
     Train, Val, Test = utils.make_kcrossvalidation(x, y, n_folds, shuffle=True)
-    Train, Val, Test = utils.zscore_dataset(Train, Val, Test, z_train=True, zscore_x=params.zscore, zscore_y=False)
+    Train, Val, Test, means, stds = utils.zscore_dataset(Train, Val, Test,
+                                                         z_train=True, zscore_x=params.zscore, zscore_y=False)
     Train, Val, Test = utils.dim_check(Train, Val, Test, nn_type=params.nn_type, nn_dim=params.n_dim)
 
     # train model
@@ -125,7 +124,8 @@ def run_NNclassifier(params):
 
         M = NNClassifier(NN, lr = params.lr, w_decay=params.w_decay)
         ktrain = utils.augment(Train[kfold], n_times=params.augment_times) if params.augment else Train[kfold]
-        M.train(ktrain, Val[kfold], n_epochs=params.n_epochs, batch_size=params.batch_size, no_improve_lim=params.early_stop)
+        M.train(ktrain, Val[kfold], n_epochs=params.n_epochs, batch_size=params.batch_size,
+                                                                                no_improve_lim=params.early_stop)
         M.test(Test[kfold])
 
         Models.append(utils.copy_model(M, copyall=params.save_weights))
@@ -149,8 +149,9 @@ def main(args):
     parser.add_argument('--filter_size', '-s', default=9, help='Size of conv filters')
     parser.add_argument('--n_layers', '-l', type=int, default=1, help='Number of layers before the softmax')
     parser.add_argument('--n_dim', '-d', type=int, default=2, help='Conv dimensionality')
+    parser.add_argument('--n_hidden_fc', type=int, default=100, help='Number of hidden units in fc layer')
     parser.add_argument('--use_bn', '-n', type=bool, default=True, help='Use batch normalization')
-    parser.add_argument('--batch_size', '-b', type=int, default=100, help='Batch size')
+    parser.add_argument('--batch_size', '-b', type=int, default=128, help='Batch size')
     parser.add_argument('--n_epochs', type=int, default=100, help='Number of epochs')
     parser.add_argument('--w_decay',  type=float, default = 0, help='Amount of weight decay')
     parser.add_argument('--early_stop', type=int, default=10, help='No improvement cutoff on validation set')

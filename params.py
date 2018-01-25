@@ -9,6 +9,7 @@ class Params(object):
         self.n_epochs = 500
         self.early_stop = 10
         self.nn_type = 'CNN_ND'
+        self.n_hidden_fc = 100
         self.n_layers = 1
         self.n_dim = 2
         self.batch_size = 100

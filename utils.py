@@ -2,7 +2,7 @@ import numpy as np
 import list_utils as jb_utils
 import cPickle as pickle
 import copy
-from models import CNN_ND, MLP
+import models
 
 
 def zscore_dataset(Train, Val, Test, z_train=True, zscore_x=True, zscore_y=True, verbose=True):
@@ -12,19 +12,25 @@ def zscore_dataset(Train, Val, Test, z_train=True, zscore_x=True, zscore_y=True,
     If z_train is False, Val and Test are z-scored using own mu and sigma.
     '''
     to_zscore = [zscore_x, zscore_y]
+    m, s = [], []
     for k_fold in range(len(Train)):
+        m.append([])
+        s.append([])
         for i in range(2):
+            m[k_fold].append([])
+            s[k_fold].append([])
             if to_zscore[i]:
-                Train[k_fold][i], m, s = zscore_2dfrom3d(Train[k_fold][i])
+                Train[k_fold][i], m[k_fold][i], s[k_fold][i] = zscore_2dfrom3d(Train[k_fold][i])
 
                 if z_train == False:
-                    m, s = None, None
+                    m[k_fold][i], s[k_fold][i] = None, None
 
-                if Val is not None: Val[k_fold][i] = zscore_2dfrom3d(Val[k_fold][i], axis=0, m=m, s=s)[0]
-                Test[k_fold][i] = zscore_2dfrom3d(Test[k_fold][i], axis=0, m=m, s=s)[0]
+                if Val is not None:
+                    Val[k_fold][i] = zscore_2dfrom3d(Val[k_fold][i], axis=0, m=m[k_fold][i], s=s[k_fold][i])[0]
+                Test[k_fold][i] = zscore_2dfrom3d(Test[k_fold][i], axis=0, m=m[k_fold][i], s=s[k_fold][i])[0]
 
     if verbose: print "Z-scored"
-    return Train, Val, Test
+    return Train, Val, Test, m, s
 
 
 def zscore_2dfrom3d(x, axis=0, m=None, s=None):
@@ -180,18 +186,23 @@ def augment(data, n_times):
 
 def make_NN(n_classes, params):
     if params.nn_type == 'CNN_ND':
-        NN = CNN_ND(n_layers=params.n_layers,
+        NN = models.CNN_ND(n_layers=params.n_layers,
                  n_dim = params.n_dim,
                  n_filters=params.n_filters,
                  filter_size=params.filter_size,
                  pad_size=(params.filter_size - 1) / 2 if type(params.filter_size) is int
-                     else tuple([(i - 1) / 2 for i in params.filter_size]),
+                     else map(lambda x: (x-1)/2, params.filter_size),
                  n_output=n_classes,
                  use_bn=params.use_bn)
+    elif params.nn_type == 'CNN_ND_GAP':
+        NN = models.CNN_ND_GAP(n_output=n_classes)
     elif params.nn_type == 'MLP':
-        NN = MLP(n_layers=params.n_layers,
-                 n_hidden=params.n_hidden,
-                 n_output=n_classes)
+        NN = models.MLP(n_layers=params.n_layers,
+                 n_hidden=params.n_hidden_fc,
+                 n_output=n_classes,
+                 use_bn=params.use_bn)
+    else:
+        raise Exception('No such model specified')
     return NN
 
 
@@ -204,7 +215,7 @@ def dim_check(Train, Val, Test, nn_type, nn_dim):
     :param nn_type: CNN or others
     :return:
     '''
-    if (nn_type in ['CNN', 'CNN_ND']) & (Train[0][0].ndim != nn_dim + 2):
+    if ('CNN' in nn_type) & (Train[0][0].ndim != nn_dim + 2):
         Train = expand_x_dims(Train)
         Val = expand_x_dims(Val)
         Test = expand_x_dims(Test)
